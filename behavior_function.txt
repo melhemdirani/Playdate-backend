@@ -1,0 +1,81 @@
+// Report user behavior
+export const reportUserBehavior = async (
+  reporterId: string,
+  reportedUserId: string,
+  matchId: string,
+  reason: string,
+  description?: string
+) => {
+  // Verify both users are participants in the match
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    include: {
+      participants: true,
+      game: true,
+    },
+  });
+
+  if (!match) {
+    throw new BadRequestError("Match not found");
+  }
+
+  const isReporterParticipant = match.participants.some(
+    (p) => p.userId === reporterId
+  );
+  const isReportedParticipant = match.participants.some(
+    (p) => p.userId === reportedUserId
+  );
+
+  if (!isReporterParticipant) {
+    throw new BadRequestError("You are not a participant in this match");
+  }
+
+  if (!isReportedParticipant) {
+    throw new BadRequestError("Reported user is not a participant in this match");
+  }
+
+  if (reporterId === reportedUserId) {
+    throw new BadRequestError("You cannot report yourself");
+  }
+
+  // Check if already reported this user for this match
+  const existingReport = await prisma.userReport.findFirst({
+    where: {
+      reporterId,
+      reportedId: reportedUserId,
+      // Note: UserReport model doesn't have matchId, so we check if recent report exists
+      createdAt: {
+        gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // within last 24 hours
+      },
+    },
+  });
+
+  if (existingReport) {
+    throw new BadRequestError("You have already reported this user recently");
+  }
+
+  // Create the report
+  const report = await prisma.userReport.create({
+    data: {
+      reporterId,
+      reportedId: reportedUserId,
+      reason: reason as any, // UserReportReason enum
+      description,
+    },
+  });
+
+  // Send notification to reported user
+  await createNotification({
+    userId: reportedUserId,
+    type: "player_reported_you",
+    redirectLink: `/support/report/${report.id}`,
+    data: {
+      match,
+      reporterId,
+      reason,
+      gameType: match.game.name,
+    },
+  });
+
+  return report;
+};

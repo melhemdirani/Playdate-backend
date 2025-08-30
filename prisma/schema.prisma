@@ -1,0 +1,514 @@
+model MatchRequest {
+  id           String     @id @default(cuid())
+  requestedBy  User       @relation("RequestedByUser", fields: [requestedById], references: [id], onDelete: Cascade)
+  requestedById String
+  game         Game       @relation(fields: [gameId], references: [id])
+  gameId       String
+  location     Location   @relation(fields: [locationId], references: [id])
+  locationId   String
+  scheduledAt  DateTime
+  maxPlayers   Int
+  pricePerUser Float
+  durationMins Int?
+  status       MatchRequestStatus @default(PENDING)
+  adminNote    String?
+  approvedBy   User?      @relation("ApprovedByAdmin", fields: [approvedById], references: [id])
+  approvedById String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum MatchRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  EDITED_AND_APPROVED
+}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  phoneNumber    String?         @unique
+  password       String
+  birthdate      String?
+  gender         Gender?         @default(UNSPECIFIED)
+  preferredTimes PreferredTime[]
+  status         UserStatus      @default(PENDING)
+  profileImage   Image?
+  age            Int?
+  quoteType      QuoteType?
+  quoteAnswer    String?
+
+  games          UserGame[] // Games the user is interested in (with skill level)
+  locations      Location[]
+  skillLevel     SkillLevel?
+  createdMatches Match[]            @relation("CreatedMatches") // Matches this user created
+  joinedMatches  MatchParticipant[] @relation("JoinedMatches") // Matches this user joined
+  matchResults   MatchResult[]
+  gamesPlayed  Int     @default(0)
+  reportedNoShows NoShowReport[] @relation("ReportedUser")
+  reportedByNoShows NoShowReport[] @relation("ReportingUser")
+
+  givenRatings    Rating[]         @relation("GivenRatings")
+  receivedRatings Rating[]         @relation("ReceivedRatings")
+
+
+  // Security & auth
+  email          String?          @unique
+  firebaseUid    String?          @unique
+  otp            String?
+  otpExpiresAt   DateTime?
+  isVerified     Boolean?         @default(false)
+  refreshTokens  RefreshToken[]
+  bySocial       Boolean          @default(false)
+  lastLoginDate  DateTime         @default(now())
+  deactivated    Boolean          @default(false)
+  logs           UserActivity[]
+  forgotPassword ForgotPassword[]
+  notifications  Notification[]
+  achievements   UserAchievement[]
+  chatMessages   ChatMessage[]
+  expoPushToken  String?
+  payments       Payment[]
+  reportsMade    UserReport[] @relation("ReportSubmitted")
+  reportsReceived UserReport[] @relation("ReportReceived")
+
+  pinnedMatches  UserPinnedMatch[]
+
+  matchRequestsRequested MatchRequest[] @relation("RequestedByUser")
+  matchRequestsApproved  MatchRequest[] @relation("ApprovedByAdmin")
+
+  // Meta
+  role      Role     @default(REGULAR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserPinnedMatch {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, matchId])
+}
+
+enum QuoteType {
+  PRE_GAME_RITUAL
+  SPORTS_MANTRA
+  PET_PEEVE
+  POST_GAME_CELEBRATION
+  HYPE_SONG
+}
+
+model Notification {
+  id           String    @id @default(cuid())
+  title        String
+  subtitle     String?
+  redirectLink String?
+  seen         Boolean   @default(false)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  type         NotificationType
+  urgency      NotificationUrgency @default(ROUTINE)
+  category     NotificationCategory @default(GAME)
+  data         Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum NotificationType {
+  MATCH
+  BEHAVIOR
+  PROGRESS
+  SOCIAL
+  FEEDBACK
+  PAYMENT
+}
+
+enum NotificationUrgency {
+  URGENT
+  ROUTINE
+}
+
+enum NotificationCategory {
+  SYSTEM
+  GAME
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum UserStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BANNED
+  SUSPENDED
+}
+
+model Game {
+  id      String  @id @default(cuid())
+  name    gameName  
+  image   Image?  @relation(fields: [imageId], references: [id])
+  imageId String?
+
+  users   UserGame[] // Users who selected this game
+  matches Match[] // Matches of this game
+
+  matchRequests MatchRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+enum gameName {
+  padel
+  basketball
+  tennis
+  volleyball
+  squash
+}
+model UserGame {
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameScoreId String?
+  gameId String
+  level GameLevel
+  gameScore UserGameScore?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@id([userId, gameId]) // Prevent duplicates
+}
+
+model UserGameScore {
+  id String @id @default(cuid())
+  userGameId String
+  gameId String
+  score Int @default(0)
+  frequency Int 
+  userSelfRating Int 
+  startDate String 
+  level GameLevel
+  userGame UserGame @relation(fields: [userGameId, gameId], references: [userId, gameId], onDelete: Cascade)
+  @@unique([userGameId, gameId])
+}
+
+model UserActivity {
+  id        String   @id @default(cuid())
+  userId    String?
+  ipAddress String?
+  activity  String
+  details   String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  url       String
+  publicId  String
+  fileName  String
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  games     Game[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  revoked   Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNSPECIFIED
+}
+
+enum Role {
+  ADMIN
+  REGULAR
+}
+
+model ForgotPassword {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  token     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, token])
+}
+
+enum PreferredTime {
+  MORNING // 06:00 – 10:00
+  AFTERNOON // 10:00 – 16:00
+  LATE_NIGHT // 21:00 – 00:00
+  ANYTIME
+}
+
+enum GameLevel {
+  BEGINNER
+  INTERMEDIATE
+  PROFESSIONAL
+}
+
+model Location {
+  id        String  @id @default(cuid())
+  name      String?
+  longitude Float
+  latitude  Float
+  city      String?
+  country   String?
+  user      User?   @relation(fields: [userId], references: [id])
+  userId    String?
+  matches   Match[]
+
+  matchRequests MatchRequest[]
+}
+
+model Match {
+  id           String     @id @default(cuid())
+  game         Game       @relation(fields: [gameId], references: [id])
+  gameId       String
+
+  createdBy    User?       @relation("CreatedMatches", fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId    String?
+
+  location     Location   @relation(fields: [locationId], references: [id])
+  locationId   String
+  scheduledAt  DateTime
+  maxPlayers   Int
+  pricePerUser Float
+
+  participants MatchParticipant[]
+  results      MatchResult[] 
+  noShowReports NoShowReport[]
+  ratings      Rating[]
+
+  status       MatchStatus   @default(UPCOMING)
+  durationMins Int           @default(60)
+  cancellationReason String?
+  chatMessages       ChatMessage[]
+  payments     Payment[]
+
+  pinnedMatches UserPinnedMatch[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+
+enum MatchStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum MatchOutcome {
+  WON
+  LOST
+  DRAW
+  NO_SHOW
+  DISPUTED
+}
+
+model MatchResult {
+  id String @id @default(cuid())
+
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  outcome    MatchOutcome?
+  reportedAt DateTime?
+  scoreProcessed Boolean @default(false)
+
+  noShowReportedBy String[]
+  
+
+  @@unique([matchId, userId])
+}
+
+model MatchParticipant {
+  user   User   @relation("JoinedMatches", fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  status MatchParticipantStatus @default(PENDING_PAYMENT)
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId String
+  team      Int?     // 1 = Team A, 2 = Team B
+  
+
+  joinedAt DateTime @default(now())
+
+  @@id([userId, matchId]) // Prevent duplicates
+}
+enum MatchParticipantStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  PAYMENT_FAILED
+}
+
+enum NoShowReasonType {
+  EMERGENCY
+  FORGOT_ABOUT_GAME
+  TECHNICAL_ISSUES
+  OTHER
+}
+
+model NoShowReport {
+  id             String   @id @default(cuid())
+  match          Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId        String
+  reporter       User     @relation("ReportingUser", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId     String
+  reportedUser   User     @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reportedUserId String
+  reason         NoShowReasonType?
+  customReason   String?
+  reporterComment String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([matchId, reporterId, reportedUserId])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   String
+  rater     User     @relation("GivenRatings", fields: [raterId], references: [id], onDelete: Cascade)
+  raterId   String
+  rated     User     @relation("ReceivedRatings", fields: [ratedId], references: [id], onDelete: Cascade)
+  ratedId   String
+  rating    Int
+  comment   String? // New field for rating comment
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([matchId, raterId, ratedId])
+}
+
+model Achievement {
+  id    String @id @default(cuid())
+  name  String @unique
+  image String?
+  users UserAchievement[]
+}
+
+model UserAchievement {
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  achievement   Achievement   @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  achievementId String
+  createdAt     DateTime      @default(now())
+
+  @@id([userId, achievementId])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String?
+  imageUrl  String?
+  imagePublicId String?
+  imageFileName String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  stripePaymentId  String?       @unique
+  amount           Float
+  currency         String        @default("usd")
+  status           PaymentStatus @default(PENDING)
+  refundAmount     Float?
+  refundReason     String?
+  refundedAt       DateTime?
+  user             User?         @relation(fields: [userId], references: [id])
+  userId           String?
+  match            Match?        @relation(fields: [matchId], references: [id])
+  matchId          String?
+  paymentMethod    String?
+  description      String?
+  metadata         Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+model UserReport {
+  id           String           @id @default(cuid())
+  reporter     User             @relation("ReportSubmitted", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId   String
+  reported     User             @relation("ReportReceived", fields: [reportedId], references: [id], onDelete: Cascade)
+  reportedId   String
+  reason       UserReportReason
+  description  String?
+  status       ReportStatus     @default(PENDING)
+  adminNotes   String?
+  resolvedBy   String?
+  resolvedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+enum UserReportReason {
+  INAPPROPRIATE_BEHAVIOR
+  HARASSMENT
+  CHEATING
+  NO_SHOW
+  FAKE_PROFILE
+  SPAM
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
