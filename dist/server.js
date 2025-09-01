@@ -51,11 +51,10 @@ const port = 4000;
 // import admin from "firebase-admin";
 // const serviceAccount = {
 //   type: "service_account",
-//   project_id: "nfc360-67b60",
-//   private_key_id: "b86f53bf20fbbab3f5eea7038428bb59d69d22d5",
+//   project_id: "",
+//   private_key_id: "",
 //   private_key:
-//     "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC0zy8JkXG+Fa1V\nb/W/zi1faMMlb8FXvD4C5rKzXJ1sna2mMuBXJKgDZEmnnpSp2lm/t5+cc7O7a34L\nW1qZgrNCJ2oBqoB0lBsshs24s8yH/7qIRRjEvxQlwjMV5jjc9wpDZp6p0K/+lEy8\npzmWjw+APESxDC0lkqevjTvaftqW5v1znhY+I94jyDoXzxNcxf6NoW8SlxiemCh1\n6V6dwNVw5ILuHGFeTxWBJEFSDDLpbp9znY+dL/2fH79Alilo2fY6dcn/f9IB8+Ff\nyzC7Cfrb+r99Zf2JwEjjH431CY6dB3aNF7ouimOW/lTBTP+lgKXkfhxfqFBuVdo6\n0uR1BCcZAgMBAAECggEACW3fmFplKeJUBIde88aDD711Jdvm45YtzrVsvtVW4V30\nuxzenbTL7Uda3vqyaow4T3r6QCy5hA3mSB3WwvgxtIK9MMKNSecaZq9OBbKcuT/x\nIJ+n28TSPmjbBKqZrw5UEvFEV3tKXlaqDNGUu4EQ8CFUfL4zkYjNJWbSZwHkEOf6\nvyDONT61WGp8M07aKI2IME+4AAzNcWmFTynODX7/AfA9Nt/S2uiBt6YmfCZg2tps\nZwl/QopMLdTYmGdhX+A3yp496l5wPbykyzg9AriNT/a2BlvHR9lpZWhnm+xCOErI\nQA6C7uDB+utzcYEVCRIgZPsID63DMepbM+T+KmEPbQKBgQD6d9GQClqphS14VaAB\npwcbGWkuN88Dcx7Q94hLHsbUtDu86juBAy2oWNfS5UMG+izwLvR5CYH/XFvBJOO7\nzW3n0vCOgh0G5tY4INl1Z6BeZVhLcuXOTljI38Q9LiLAipfxJ4Q/IqHihmEpfp1K\nAJZMKdubv5XntA2I1rvqsgAUzQKBgQC4zYFCR7dox70vUdzdlaKrXQG4IujHRfR3\nQeyCwr3RZzHycWJF43IgA6mB0jI0QA5gJ5/VihtCqAhdqnICZtCB6s3nkkHiS0S4\nhIISSpaIJRA5f8HrlcKtGXyb0vPApE8o506u1OCrL0EkX22yv7zBf83P4C705TxO\nTRk8qOn7fQKBgE3E+GfOHzp1pJmxlH4O27D5YeQ85eU/UHk38rTIeJpA4C+XVySG\n1R1pgJH2J6q58UweeEBAyIF+ruq4xpFghtitcY3+Ln8fG7LP2FWQ+IV22ESNB3fY\ncc7lU+xfL+Ey51y0lWZ5HWTVrsOQkcwRhJlfgdXJVgVcrbsoWa7U2BudAoGAGnYS\nlBMAyBgRlrz6CyBp8m+W127oNeBmaM0fuHl6BInqNPTXRXqT1NGxa81VMvYZGNuT\nn1fvH1RAHmlRedaO9ItSgF4I4QY2CNWwaj4T39quwAzzD3CaN372wLkr/eGJFCpK\nse35XYmeoj6nznh15p8OMT3Ae4B3ah7QBkeJeWECgYBQWH4KtzeESaeYzkqy2l/l\nJXNcrOSSgt+lI0JlqSBuB5wbO5HfuEI0w3SkgEoASlt725qNs3ko2k2JIr0rMB+s\nVtKLW5d4rBjYwnZx4v31wKOpgj2YP0KVTXhiH2zy+fFLhkmfdYZjH4ylTgccAbSt\n1+4DFl0Tg8p5oA+L0+ZycQ==\n-----END PRIVATE KEY-----\n",
-//   client_email: "firebase-adminsdk-vfu4t@nfc360-67b60.iam.gserviceaccount.com",
+//     "",
 //   client_id: "115471291454814869177",
 //   auth_uri: "https://accounts.google.com/o/oauth2/auth",
 //   token_uri: "https://oauth2.googleapis.com/token",

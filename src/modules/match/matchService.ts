@@ -18,14 +18,21 @@ import { createMatchRequest } from "../matchRequest/matchRequestService";
 const prisma = new PrismaClient();
 
 // Utility function to calculate distance between two coordinates using Haversine formula
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
   const R = 6371; // Earth's radius in kilometers
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c; // Distance in kilometers
   return distance;
@@ -329,6 +336,9 @@ export const getRecommendedMatches = async (
 ) => {
   try {
     const where: any = {
+      scheduledAt: {
+        gte: new Date(),
+      },
       participants: {
         none: {
           userId: userId,
@@ -376,11 +386,11 @@ export const getRecommendedMatches = async (
       const longitude = query.longitude;
       const latitude = query.latitude;
       const radius = 10; // Fixed 10km radius
-      
+
       matches = matches.filter((match) => {
         const matchLongitude = match.location.longitude;
         const matchLatitude = match.location.latitude;
-        
+
         // Calculate distance using Haversine formula
         const distance = calculateDistance(
           latitude,
@@ -388,7 +398,7 @@ export const getRecommendedMatches = async (
           matchLatitude,
           matchLongitude
         );
-        
+
         return distance <= radius;
       });
     }
