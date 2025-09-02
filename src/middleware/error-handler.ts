@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { Prisma } from '@prisma/client';
-import { Request, Response, NextFunction } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { ZodError } from 'zod';
+import { Prisma } from "@prisma/client";
+import { Request, Response, NextFunction } from "express";
+import { StatusCodes } from "http-status-codes";
+import { ZodError } from "zod";
 
 const errorHandlerMiddleware = (
   err: any,
@@ -12,20 +12,20 @@ const errorHandlerMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log('error', err);
+  console.log("error", err);
 
-  req.log.error(err);
+  console.error(err);
   const defaultError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-    message: err.message || 'Something went wrong, try again later',
-    fromPrisma: err.fromPrisma || false
+    message: err.message || "Something went wrong, try again later",
+    fromPrisma: err.fromPrisma || false,
   };
-  if (err.name === 'ValidationError') {
+  if (err.name === "ValidationError") {
     defaultError.statusCode = StatusCodes.BAD_REQUEST;
 
     defaultError.message = Object.values(err.errors)
       .map((item: any) => item.message)
-      .join(',');
+      .join(",");
   }
   if (err.code && err.code === 11000) {
     defaultError.statusCode = StatusCodes.BAD_REQUEST;
@@ -62,7 +62,7 @@ const errorHandlerMiddleware = (
 
   if (err instanceof ZodError) {
     defaultError.statusCode = StatusCodes.BAD_REQUEST;
-    defaultError.message = err.issues.map((issue) => issue.message).join(',');
+    defaultError.message = err.issues.map((issue) => issue.message).join(",");
   }
   if (err.isAxiosError) {
     defaultError.statusCode =
@@ -75,7 +75,7 @@ const errorHandlerMiddleware = (
   res.status(defaultError.statusCode).json({
     message: defaultError.message,
     status: defaultError.statusCode,
-    fromPrisma: defaultError.fromPrisma
+    fromPrisma: defaultError.fromPrisma,
   });
 };
 

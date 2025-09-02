@@ -71,7 +71,7 @@ router.post(
     }
 
     const files = req.files as Express.Multer.File[];
-    req.log.info(files, "files");
+    console.log(files, "files");
 
     try {
       const response = files.map((file) => {
@@ -118,7 +118,7 @@ router.post(
     }
 
     const file = req.file as Express.Multer.File;
-    req.log.info(file, "file");
+    console.log(file, "file");
 
     try {
       const publicId = generatePublicId();
@@ -151,7 +151,7 @@ router.post(
     }
 
     const file = req.file as Express.Multer.File;
-    req.log.info(file, "file");
+    console.log(file, "file");
 
     try {
       const publicId = generatePublicId();
@@ -184,7 +184,7 @@ router.post(
     }
 
     const files = req.files as Express.Multer.File[];
-    req.log.info(files, "files");
+    console.log(files, "files");
 
     try {
       const response = files.map((file) => {
