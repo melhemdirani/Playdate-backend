@@ -7,18 +7,18 @@ const http_status_codes_1 = require("http-status-codes");
 const zod_1 = require("zod");
 const errorHandlerMiddleware = (err, req, res, next) => {
     var _a, _b, _c;
-    console.log('error', err);
-    req.log.error(err);
+    console.log("error", err);
+    console.error(err);
     const defaultError = {
         statusCode: err.statusCode || http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR,
-        message: err.message || 'Something went wrong, try again later',
-        fromPrisma: err.fromPrisma || false
+        message: err.message || "Something went wrong, try again later",
+        fromPrisma: err.fromPrisma || false,
     };
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
         defaultError.statusCode = http_status_codes_1.StatusCodes.BAD_REQUEST;
         defaultError.message = Object.values(err.errors)
             .map((item) => item.message)
-            .join(',');
+            .join(",");
     }
     if (err.code && err.code === 11000) {
         defaultError.statusCode = http_status_codes_1.StatusCodes.BAD_REQUEST;
@@ -51,7 +51,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     }
     if (err instanceof zod_1.ZodError) {
         defaultError.statusCode = http_status_codes_1.StatusCodes.BAD_REQUEST;
-        defaultError.message = err.issues.map((issue) => issue.message).join(',');
+        defaultError.message = err.issues.map((issue) => issue.message).join(",");
     }
     if (err.isAxiosError) {
         defaultError.statusCode =
@@ -63,7 +63,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     res.status(defaultError.statusCode).json({
         message: defaultError.message,
         status: defaultError.statusCode,
-        fromPrisma: defaultError.fromPrisma
+        fromPrisma: defaultError.fromPrisma,
     });
 };
 exports.default = errorHandlerMiddleware;

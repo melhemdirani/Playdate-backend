@@ -57,7 +57,7 @@ router.post("/uploads", upload.array("files", 12), async (req, res) => {
         });
     }
     const files = req.files;
-    req.log.info(files, "files");
+    console.log(files, "files");
     try {
         const response = files.map((file) => {
             const publicId = generatePublicId();
@@ -94,7 +94,7 @@ router.post("/upload-video", videoUpload.single("file"), async (req, res) => {
         });
     }
     const file = req.file;
-    req.log.info(file, "file");
+    console.log(file, "file");
     try {
         const publicId = generatePublicId();
         const result = {
@@ -120,7 +120,7 @@ router.post("/upload-document", upload.single("file"), async (req, res) => {
         });
     }
     const file = req.file;
-    req.log.info(file, "file");
+    console.log(file, "file");
     try {
         const publicId = generatePublicId();
         const result = {
@@ -146,7 +146,7 @@ router.post("/upload-videos", videoUpload.array("files", 12), async (req, res) =
         });
     }
     const files = req.files;
-    req.log.info(files, "files");
+    console.log(files, "files");
     try {
         const response = files.map((file) => {
             const publicId = generatePublicId();
