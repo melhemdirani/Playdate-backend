@@ -14,6 +14,7 @@ import { calculateUserOverallRating } from "../rating/ratingService";
 import { createMatchPaymentIntent } from "../../payment/stripe/stripeService";
 import { levelToNumber } from "../user/usersService";
 import { createMatchRequest } from "../matchRequest/matchRequestService";
+import { equal } from "assert";
 
 const prisma = new PrismaClient();
 
@@ -335,9 +336,13 @@ export const getRecommendedMatches = async (
   query: GetRecommendedMatchesQueryInput
 ) => {
   try {
+    // Set to start of today (midnight)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const where: any = {
       scheduledAt: {
-        gte: new Date(),
+        gte: today,
       },
       participants: {
         none: {
@@ -346,11 +351,15 @@ export const getRecommendedMatches = async (
       },
     };
     if (query.date) {
-      where.date = query.date;
-    }
+      // Create start and end of the selected date
+      const startDate = new Date(query.date);
+      const endDate = new Date(query.date);
+      endDate.setDate(endDate.getDate() + 1);
 
-    if (query.time) {
-      where.time = query.time;
+      where.scheduledAt = {
+        gte: startDate,
+        lt: endDate,
+      };
     }
 
     if (query.gender && query.gender !== "ANYONE") {
@@ -362,6 +371,13 @@ export const getRecommendedMatches = async (
     if (query.gameId) {
       where.gameId = query.gameId;
     }
+    if (query.sports) {
+      console.log("Filtering by sports:", query.sports);
+      where.game = {
+        id: query.sports,
+      };
+    }
+    console.log("where", where);
 
     let matches = await prisma.match.findMany({
       where,
@@ -380,6 +396,24 @@ export const getRecommendedMatches = async (
         },
       },
     });
+
+    // Filter matches by time of day if specified
+    if (query.time) {
+      matches = matches.filter((match) => {
+        const hour = new Date(match.scheduledAt).getHours();
+
+        switch (query.time) {
+          case "MORNING":
+            return hour >= 5 && hour < 12;
+          case "AFTERNOON":
+            return hour >= 12 && hour < 17;
+          case "LATE_NIGHT":
+            return hour >= 17 || hour < 5;
+          default:
+            return true;
+        }
+      });
+    }
 
     // Apply geolocation filtering if provided
     if (query.longitude !== undefined && query.latitude !== undefined) {

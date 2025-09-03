@@ -38,7 +38,6 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
   }
 
   const authorization = req?.headers?.authorization;
-
   if (!authorization) {
     return res
       .status(401)
@@ -65,6 +64,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     next();
   } catch (error) {
     // Since 'error' is of type 'unknown', use type assertion if you want to access specific properties
+    console.log("error", error);
     const errorMessage =
       error instanceof Error ? error.message : "Invalid token provided";
     return res.status(401).json({ message: errorMessage });

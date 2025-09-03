@@ -48,6 +48,7 @@ exports.getRecommendedMatchesQuerySchema = zod_1.z.object({
     time: zod_1.z.enum(["MORNING", "AFTERNOON", "LATE_NIGHT"]).optional(),
     sortBy: zod_1.z.enum(["scheduledAt", "pricePerUser"]).optional(),
     gender: zod_1.z.enum(["MALE", "FEMALE", "ANYONE"]).optional(),
+    sports: zod_1.z.string().optional(),
     gameId: zod_1.z.string().optional(),
     longitude: zod_1.z.coerce.number().optional(),
     latitude: zod_1.z.coerce.number().optional(),

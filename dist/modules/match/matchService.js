@@ -259,9 +259,12 @@ const getMatches = async (query) => {
 exports.getMatches = getMatches;
 const getRecommendedMatches = async (userId, query) => {
     try {
+        // Set to start of today (midnight)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const where = {
             scheduledAt: {
-                gte: new Date(),
+                gte: today,
             },
             participants: {
                 none: {
@@ -270,10 +273,14 @@ const getRecommendedMatches = async (userId, query) => {
             },
         };
         if (query.date) {
-            where.date = query.date;
-        }
-        if (query.time) {
-            where.time = query.time;
+            // Create start and end of the selected date
+            const startDate = new Date(query.date);
+            const endDate = new Date(query.date);
+            endDate.setDate(endDate.getDate() + 1);
+            where.scheduledAt = {
+                gte: startDate,
+                lt: endDate,
+            };
         }
         if (query.gender && query.gender !== "ANYONE") {
             where.createdBy = {
@@ -283,6 +290,13 @@ const getRecommendedMatches = async (userId, query) => {
         if (query.gameId) {
             where.gameId = query.gameId;
         }
+        if (query.sports) {
+            console.log("Filtering by sports:", query.sports);
+            where.game = {
+                id: query.sports,
+            };
+        }
+        console.log("where", where);
         let matches = await prisma.match.findMany({
             where,
             orderBy: query.sortBy ? { [query.sortBy]: "asc" } : undefined,
@@ -300,6 +314,22 @@ const getRecommendedMatches = async (userId, query) => {
                 },
             },
         });
+        // Filter matches by time of day if specified
+        if (query.time) {
+            matches = matches.filter((match) => {
+                const hour = new Date(match.scheduledAt).getHours();
+                switch (query.time) {
+                    case "MORNING":
+                        return hour >= 5 && hour < 12;
+                    case "AFTERNOON":
+                        return hour >= 12 && hour < 17;
+                    case "LATE_NIGHT":
+                        return hour >= 17 || hour < 5;
+                    default:
+                        return true;
+                }
+            });
+        }
         // Apply geolocation filtering if provided
         if (query.longitude !== undefined && query.latitude !== undefined) {
             const longitude = query.longitude;

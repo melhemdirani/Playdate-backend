@@ -49,6 +49,7 @@ export const getRecommendedMatchesQuerySchema = z.object({
   time: z.enum(["MORNING", "AFTERNOON", "LATE_NIGHT"]).optional(),
   sortBy: z.enum(["scheduledAt", "pricePerUser"]).optional(),
   gender: z.enum(["MALE", "FEMALE", "ANYONE"]).optional(),
+  sports: z.string().optional(),
   gameId: z.string().optional(),
   longitude: z.coerce.number().optional(),
   latitude: z.coerce.number().optional(),

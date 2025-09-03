@@ -63,6 +63,7 @@ export const getRecommendedMatchesHandler = async (
   req: CustomRequest,
   res: Response
 ) => {
+  console.log("start");
   try {
     const userId = req.user.id;
     const query = req.query as GetRecommendedMatchesQueryInput;

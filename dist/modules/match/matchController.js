@@ -34,6 +34,7 @@ const getMatchesHandler = async (req, res) => {
 };
 exports.getMatchesHandler = getMatchesHandler;
 const getRecommendedMatchesHandler = async (req, res) => {
+    console.log("start");
     try {
         const userId = req.user.id;
         const query = req.query;

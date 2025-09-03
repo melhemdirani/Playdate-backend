@@ -57,6 +57,7 @@ async function auth(req, res, next) {
     }
     catch (error) {
         // Since 'error' is of type 'unknown', use type assertion if you want to access specific properties
+        console.log("error", error);
         const errorMessage = error instanceof Error ? error.message : "Invalid token provided";
         return res.status(401).json({ message: errorMessage });
     }
