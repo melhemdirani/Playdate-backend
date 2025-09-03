@@ -545,6 +545,7 @@ export async function updateUser(userId: string, body: UpdateUserInput) {
 
   if (phoneNumber && phoneNumber !== existingUser.phoneNumber) {
     const phoneInUse = await prisma.user.findUnique({ where: { phoneNumber } });
+    console.log("phoneInUse", phoneInUse, existingUser);
     if (phoneInUse) {
       throw new BadRequestError("Phone number already in use");
     }
